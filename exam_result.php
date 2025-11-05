@@ -67,27 +67,31 @@ if ($requestMethod == 'POST') {
 
 // -------------------- UPDATE (PUT) --------------------
 if ($requestMethod == 'PUT') {
-    if (!empty($result['id'])) {
-        $id = $result['id'];
-        $point = $result['point'];
+    if (!empty($result['id']) && isset($result['point'])) {
+        $id = intval($result['id']);
+        $point = mysqli_real_escape_string($link, $result['point']);
 
         $sql = "UPDATE exam_results SET point = '$point' WHERE id = '$id'";
         $res = mysqli_query($link, $sql);
 
         if ($res) {
-            http_response_code(201); // สำหรับ POST
-            echo json_encode(['status' => 'ok', 'message' => 'Insert Data Complete']);
+            http_response_code(200);
+            echo json_encode(['status' => 'ok', 'message' => 'Update Data Complete']);
         } else {
-    http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => mysqli_error($link)]);
-}
-
+            http_response_code(400);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ข้อผิดพลาดในการแก้ไข',
+                'error_detail' => mysqli_error($link)
+            ]);
+        }
     } else {
         http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Missing ID']);
+        echo json_encode(['status' => 'error', 'message' => 'Missing ID or point']);
     }
     exit;
 }
+
 
 
 // -------------------- DELETE (DELETE) --------------------
