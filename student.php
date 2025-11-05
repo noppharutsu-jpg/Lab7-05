@@ -35,38 +35,48 @@ $data = file_get_contents('php://input');
 //แปลงขอ้ มูลทÉอ่านได้ ี เป็ น array แลว้เก็บไวท้ีÉตวัแปร result
 $result = json_decode($data,true);
 //ตรวจสอบการเรียกใชง้านวา่ เป็น Method POST หรือไม่
-if($requestMethod == 'POST'){
-if(!empty($result)){
-$student_code = $result['student_code'];
-$student_name = $result['student_name'];
-$gender = $result['gender'];
-//คาํสัÉง SQL สาํ หรบั เพิÉมขอ้ มูลใน Database
-$sql = "INSERT INTO students (student_code, student_name, gender) VALUES
-('$student_code', '$student_name','$gender')";
-$result = mysqli_query($link, $sql);
-if ($result) {
-echo json_encode(['status' => 'ok','message' => 'Insert Data Complete']);
-} else {
-echo json_encode(['status' => 'error','message' => 'Error']);
-}
-}
-}
-//ตรวจสอบการเรียกใชง้านวา่ เป็น Method PUT หรือไม่
-if ($requestMethod == 'PUT') {
-    $key_student = $_GET["student_code"];
-    $student_code = $result['student_code'];
-    $student_name = $result['student_name'];
-    $gender = $result['gender'];
-    //คาํสัÉง SQL สาํ หรบัแกไ้ขขอ้ มูลใน Database โดยจะแกไ้ขเฉพาะขอ้ มูลตามค่าstudent_code ทีÉส่งมา
-    $sql = "UPDATE students SET student_name = '$student_name' , gender = '$gender', student_code = '$student_code'
-    WHERE student_code='$key_student'";
-    try {
+if ($requestMethod == 'POST') {
+    if (!empty($result)) {
+        $student_code = $result['student_code'];
+        $student_name = $result['student_name'];
+        $gender = $result['gender'];
+        $sql = "INSERT INTO students (student_code, student_name, gender)
+                VALUES ('$student_code', '$student_name', '$gender')";
         $result = mysqli_query($link, $sql);
-        echo json_encode(['status' => 'ok', 'message' => 'Update Data Complete']);
-    } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        if ($result) {
+            echo json_encode(['status' => 'ok','message' => 'Insert Data Complete']);
+        } else {
+            echo json_encode(['status' => 'error','message' => 'Error']);
+        }
     }
 }
+
+//ตรวจสอบการเรียกใชง้านวา่ เป็น Method PUT หรือไม่
+if ($requestMethod == 'PUT') {
+    if (!empty($result['student_code'])) {
+        $student_code = $result['student_code'];
+        $student_name = $result['student_name'];
+        $gender = $result['gender'];
+
+        $sql = "UPDATE students 
+                SET student_name = '$student_name', gender = '$gender'
+                WHERE student_code = '$student_code'";
+
+        $res = mysqli_query($link, $sql);
+        if ($res) {
+            http_response_code(200);
+            echo json_encode(['status' => 'ok', 'message' => 'Update Data Complete']);
+        } else {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => mysqli_error($link)]);
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Missing student_code']);
+    }
+    exit;
+}
+
 //ตรวจสอบการเรียกใชง้านวา่ เป็น Method DELETE หรือไม่
 if ($requestMethod == 'DELETE') {
     //ตรวจสอบวา่ มีการส่งค่า student_code มาหรือไม่

@@ -67,28 +67,28 @@ if ($requestMethod == 'POST') {
 
 // -------------------- UPDATE (PUT) --------------------
 if ($requestMethod == 'PUT') {
-    if (isset($_GET["id"]) && !empty($_GET["id"])) {
-        $id = $_GET["id"];
-        $course_code = $result['course_code'];
-        $student_code = $result['student_code'];
+    if (!empty($result['id'])) {
+        $id = $result['id'];
         $point = $result['point'];
 
-        $sql = "UPDATE exam_results 
-                SET course_code = '$course_code', 
-                    student_code = '$student_code', 
-                    point = '$point'
-                WHERE id = '$id'";
-
+        $sql = "UPDATE exam_results SET point = '$point' WHERE id = '$id'";
         $res = mysqli_query($link, $sql);
 
         if ($res) {
-            echo json_encode(['status' => 'ok', 'message' => 'Update Data Complete']);
+            http_response_code(201); // สำหรับ POST
+            echo json_encode(['status' => 'ok', 'message' => 'Insert Data Complete']);
         } else {
-            echo json_encode(['status' => 'error', 'message' => mysqli_error($link)]);
-        }
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => mysqli_error($link)]);
+}
+
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Missing ID']);
     }
     exit;
 }
+
 
 // -------------------- DELETE (DELETE) --------------------
 if ($requestMethod == 'DELETE') {
